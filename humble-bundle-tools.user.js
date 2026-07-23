@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.0
+// @version      1.0.1
 // @description  En la Humble Store: (1) en la lista de deseos (/store/wishlist) agrega ordenar y filtrar (agregado, nombre, precio, descuento; "solo con descuento" y por plataforma) con recuerdo y URL compartible; (2) en las páginas de producto de juegos de PC agrega botones a GG.deals y PCGamingWiki.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -427,11 +427,12 @@
     // =========================================================================
     const GGDEALS_SEARCH_URL = 'https://gg.deals/games/?title=';
     const PCGW_SEARCH_URL = 'https://pcgamingwiki.com/w/index.php?search=';
-    // Iconos de marca (favicon oficial de cada sitio), cargados como <img> remoto
-    // igual que los botones de GOGDB/EGData. Si el CSP de Humble los bloqueara,
-    // onerror los oculta y queda solo el texto.
+    // Icono de GG.deals: favicon remoto (su CDN permite hotlink y carga bien en Humble).
     const GGDEALS_ICON_URL = 'https://gg.deals/favicon.ico';
-    const PCGW_ICON_URL = 'https://www.pcgamingwiki.com/favicon.ico';
+    // Icono de PCGamingWiki: SVG inline. Su favicon.ico responde 403 al hotlink
+    // (Cloudflare) desde otros dominios, así que como <img> remoto no se ve; el SVG
+    // inline es markup y siempre pinta, sin depender del CSP ni del hotlink.
+    const PCGW_ICON_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 2h8l4 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V7h3.5L13 3.5zM8 11h8v1.5H8zm0 3h8v1.5H8zm0-6h5v1.5H8z"/></svg>';
 
     // La página de producto se identifica por este bloque, que NO existe en
     // /store (listado), /store/search ni /store/wishlist.
@@ -494,16 +495,23 @@
         (document.head || document.documentElement).appendChild(style);
     }
 
-    function makeLinkButton(cls, label, href, iconUrl) {
+    // opts: { iconUrl } (favicon remoto) o { iconSvg } (SVG inline, a prueba de CSP/hotlink)
+    function makeLinkButton(cls, label, href, opts) {
         const a = document.createElement('a');
         a.className = `hbx-btn ${cls}`;
         a.href = href;
         a.target = '_blank';
         a.rel = 'nofollow noopener external';
-        if (iconUrl) {
+        if (opts && opts.iconSvg) {
+            const span = document.createElement('span');
+            span.className = 'hbx-ico';
+            span.style.display = 'inline-flex';
+            span.innerHTML = opts.iconSvg;
+            a.appendChild(span);
+        } else if (opts && opts.iconUrl) {
             const img = document.createElement('img');
             img.className = 'hbx-ico';
-            img.src = iconUrl;
+            img.src = opts.iconUrl;
             img.alt = '';
             img.addEventListener('error', () => img.remove());  // sin icono si el CSP lo bloquea
             a.appendChild(img);
@@ -517,8 +525,8 @@
         const box = document.createElement('div');
         box.id = LINKS_ID;
         const q = encodeURIComponent(title);
-        box.appendChild(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q, GGDEALS_ICON_URL));
-        box.appendChild(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q, PCGW_ICON_URL));
+        box.appendChild(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q, { iconUrl: GGDEALS_ICON_URL }));
+        box.appendChild(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q, { iconSvg: PCGW_ICON_SVG }));
         return box;
     }
 
