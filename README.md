@@ -16,7 +16,7 @@ Userscript de Tampermonkey para la Humble Store: herramientas de lista de deseos
 
 **Instalación:**
 1. Instala [Tampermonkey](https://www.tampermonkey.net/).
-2. Abre el instalador: [humble-bundle-tools.user.js](https://github.com/g31w0fw0rld/humble-bundle-tools/raw/main/humble-bundle-tools.user.js) (también en GreasyFork y OpenUserJS).
+2. Abre el instalador: [humble-bundle-tools.user.js](https://github.com/g31w0fw0rld/humble-bundle-tools/raw/main/humble-bundle-tools.user.js) (también en [GreasyFork](https://greasyfork.org/es-419/users/1590477-g31w) y [OpenUserJS](https://openuserjs.org/users/g31w0fw0rldgmail.com/scripts)).
 
 **Sitio:** `humblebundle.com`
 
@@ -34,7 +34,7 @@ Userscript de Tampermonkey para la Humble Store: herramientas de lista de deseos
 
 **Install:**
 1. Install [Tampermonkey](https://www.tampermonkey.net/).
-2. Open the installer: [humble-bundle-tools.user.js](https://github.com/g31w0fw0rld/humble-bundle-tools/raw/main/humble-bundle-tools.user.js) (also on GreasyFork and OpenUserJS).
+2. Open the installer: [humble-bundle-tools.user.js](https://github.com/g31w0fw0rld/humble-bundle-tools/raw/main/humble-bundle-tools.user.js) (also on [GreasyFork](https://greasyfork.org/es-419/users/1590477-g31w) and [OpenUserJS](https://openuserjs.org/users/g31w0fw0rldgmail.com/scripts)).
 
 **Site:** `humblebundle.com`
 
