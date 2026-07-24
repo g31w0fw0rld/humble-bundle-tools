@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.3
+// @version      1.0.4
 // @description  En la Humble Store: (1) en la lista de deseos (/store/wishlist) agrega ordenar y filtrar (agregado, nombre, precio, descuento; "solo con descuento" y por plataforma) con recuerdo, URL compartible, tooltips y botón "Saber más"; (2) en las páginas de producto de juegos de PC agrega botones a GG.deals y PCGamingWiki.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -107,7 +107,7 @@
         },
     };
     const t = I18N[LANG];
-    const SCRIPT_VERSION = '1.0.3'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.0.4'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
