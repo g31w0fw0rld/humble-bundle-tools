@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.2
-// @description  En la Humble Store: (1) en la lista de deseos (/store/wishlist) agrega ordenar y filtrar (agregado, nombre, precio, descuento; "solo con descuento" y por plataforma) con recuerdo y URL compartible; (2) en las páginas de producto de juegos de PC agrega botones a GG.deals y PCGamingWiki.
+// @version      1.0.3
+// @description  En la Humble Store: (1) en la lista de deseos (/store/wishlist) agrega ordenar y filtrar (agregado, nombre, precio, descuento; "solo con descuento" y por plataforma) con recuerdo, URL compartible, tooltips y botón "Saber más"; (2) en las páginas de producto de juegos de PC agrega botones a GG.deals y PCGamingWiki.
 // @author       g31w0fw0rld
 // @license      MIT
 // @match        https://www.humblebundle.com/store/*
@@ -58,15 +58,56 @@
             platformLabel: 'Plataforma:', all: 'Todas', uplay: 'Ubisoft', origin: 'EA', key: 'Clave', drmfree: 'Sin DRM',
             dirTitle: 'Ascendente / Descendente', onlyDiscount: 'Solo con descuento', remember: 'Recordar',
             copy: '🔗 Copiar enlace', copied: '✔ Copiado', copyPrompt: 'Copia este enlace:',
+            about: 'ℹ️ Saber más', close: 'Cerrar',
+            sortTip: 'Ordena tu lista de deseos por fecha de agregado, nombre, precio o porcentaje de descuento.',
+            dirTip: 'Alterna entre orden ascendente (↑) y descendente (↓).',
+            platformTip: 'Muestra solo los juegos de la plataforma elegida (Steam, Epic, GOG, etc.). "Todas" no filtra.',
+            onlyDiscountTip: 'Oculta los juegos que no están en oferta; muestra solo los que tienen descuento.',
+            rememberTip: 'Guarda tu orden y filtros y los reaplica al volver a la lista de deseos.',
+            copyTip: 'Copia un enlace que reproduce tu orden y filtros actuales al abrirlo.',
+            aboutTip: 'Ver qué hace este script en su totalidad.',
+            aboutTitle: '¿Qué hace este script?',
+            aboutBody: [
+                'Este script mejora la Humble Store en dos frentes:',
+                '• En tu lista de deseos añade una barra de herramientas:',
+                '– Ordenar: por fecha de agregado, nombre, precio o descuento (ascendente/descendente).',
+                '– Plataforma: filtra por Steam, Epic, GOG, Ubisoft, EA, clave o sin DRM.',
+                '– Solo con descuento: muestra únicamente los juegos en oferta.',
+                '– Recordar: guarda tu orden y filtros y los reaplica al volver.',
+                '– Copiar enlace: genera una URL que reproduce tu orden y filtros.',
+                '• En las páginas de producto de juegos de PC añade botones a GG.deals (precios/ofertas) y PCGamingWiki (compatibilidad y arreglos).',
+                'Todo se procesa en tu navegador (se guarda en localStorage); no se envían datos a ningún servidor.',
+            ],
         },
         en: {
             sortLabel: 'Sort:', added: 'Added', name: 'Name', price: 'Price', discount: 'Discount',
             platformLabel: 'Platform:', all: 'All', uplay: 'Ubisoft', origin: 'EA', key: 'Key', drmfree: 'DRM-free',
             dirTitle: 'Ascending / Descending', onlyDiscount: 'Only discounted', remember: 'Remember',
             copy: '🔗 Copy link', copied: '✔ Copied', copyPrompt: 'Copy this link:',
+            about: 'ℹ️ Learn more', close: 'Close',
+            sortTip: 'Sorts your wishlist by date added, name, price or discount percentage.',
+            dirTip: 'Toggles ascending (↑) and descending (↓) order.',
+            platformTip: 'Shows only games for the chosen platform (Steam, Epic, GOG, etc.). "All" does not filter.',
+            onlyDiscountTip: 'Hides games that are not on sale; shows only discounted ones.',
+            rememberTip: 'Saves your sort and filters and reapplies them when you return to the wishlist.',
+            copyTip: 'Copies a link that reproduces your current sort and filters when opened.',
+            aboutTip: 'See everything this script does.',
+            aboutTitle: 'What does this script do?',
+            aboutBody: [
+                'This script improves the Humble Store in two ways:',
+                '• On your wishlist it adds a toolbar:',
+                '– Sort: by date added, name, price or discount (ascending/descending).',
+                '– Platform: filter by Steam, Epic, GOG, Ubisoft, EA, key or DRM-free.',
+                '– Only discounted: shows only games on sale.',
+                '– Remember: saves your sort and filters and reapplies them on return.',
+                '– Copy link: builds a URL that reproduces your sort and filters.',
+                '• On PC game product pages it adds buttons to GG.deals (prices/deals) and PCGamingWiki (compatibility and fixes).',
+                'Everything runs in your browser (stored in localStorage); no data is sent to any server.',
+            ],
         },
     };
     const t = I18N[LANG];
+    const SCRIPT_VERSION = '1.0.3'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -282,12 +323,87 @@
         if (!options.includes(settings.platform)) { settings.platform = 'all'; platformSelEl.value = 'all'; }
     }
 
+    // --- Modal "Saber más" (autocontenido) --------------------------------------
+    function showAboutModal() {
+        if (document.getElementById('hbwl-about-overlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'hbwl-about-overlay';
+        Object.assign(overlay.style, {
+            position: 'fixed', inset: '0', width: '100%', height: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.6)', zIndex: '2147483647',
+            transition: 'opacity 180ms ease', opacity: '0',
+        });
+        const box = document.createElement('div');
+        Object.assign(box.style, {
+            background: '#12100f', color: '#f5f3f2', borderRadius: '14px',
+            padding: '26px 30px', minWidth: '320px', maxWidth: '560px',
+            maxHeight: '80vh', overflowY: 'auto', boxSizing: 'border-box',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid #cb272c',
+            fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px', lineHeight: '1.5',
+            transform: 'translateY(8px) scale(0.98)', opacity: '0',
+            transition: 'transform 180ms ease, opacity 180ms ease',
+        });
+        const title = document.createElement('div');
+        title.textContent = t.aboutTitle;
+        title.style.cssText = 'font-weight:bold;font-size:17px;margin-bottom:14px;color:#f4646a;';
+        box.appendChild(title);
+        (t.aboutBody || []).forEach((p) => {
+            const row = document.createElement('div');
+            const trimmed = String(p).replace(/^\s+/, '');
+            row.textContent = trimmed;
+            row.style.marginBottom = '8px';
+            if (trimmed.startsWith('–')) row.style.paddingLeft = '22px';
+            else if (trimmed.startsWith('•')) row.style.paddingLeft = '10px';
+            box.appendChild(row);
+        });
+        const gh = document.createElement('a');
+        gh.href = 'https://github.com/g31w0fw0rld/humble-bundle-tools';
+        gh.target = '_blank'; gh.rel = 'noopener';
+        gh.textContent = 'github.com/g31w0fw0rld/humble-bundle-tools';
+        gh.style.cssText = 'display:inline-block;margin-top:6px;color:#f4646a;text-decoration:underline;font-size:12px;';
+        box.appendChild(gh);
+        const kofi = document.createElement('a');
+        kofi.href = 'https://ko-fi.com/g31w0fw0rld';
+        kofi.target = '_blank'; kofi.rel = 'noopener';
+        kofi.textContent = '☕ Apóyame en Ko-fi / Support me on Ko-fi';
+        kofi.style.cssText = 'display:block;margin-top:8px;color:#f4646a;text-decoration:underline;font-size:12px;';
+        box.appendChild(kofi);
+        const foot = document.createElement('div');
+        foot.textContent = 'v' + SCRIPT_VERSION + ' · g31w0fw0rld';
+        foot.style.cssText = 'margin-top:2px;font-size:12px;opacity:0.7;';
+        box.appendChild(foot);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.textContent = t.close;
+        closeBtn.style.cssText = 'display:block;margin-top:16px;padding:8px 14px;background:#cb272c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;';
+        box.appendChild(closeBtn);
+        const closeIt = () => {
+            overlay.style.opacity = '0'; box.style.opacity = '0';
+            box.style.transform = 'translateY(8px) scale(0.98)';
+            document.removeEventListener('keydown', onKey);
+            setTimeout(() => overlay.remove(), 180);
+        };
+        const onKey = (e) => { if (e.key === 'Escape') closeIt(); };
+        closeBtn.addEventListener('click', closeIt);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeIt(); });
+        document.addEventListener('keydown', onKey);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            box.style.transform = 'translateY(0) scale(1)';
+            box.style.opacity = '1';
+        }, 10);
+    }
+
     function buildToolbar() {
         injectWishlistStyles();
         const bar = document.createElement('div');
         bar.id = TOOLBAR_ID;
 
         const sortLabel = document.createElement('label');
+        sortLabel.title = t.sortTip;
         sortLabel.appendChild(document.createTextNode(t.sortLabel));
         const sortSel = document.createElement('select');
         SORTS.forEach((s) => {
@@ -307,7 +423,7 @@
         const dirBtn = document.createElement('button');
         dirBtn.type = 'button';
         dirBtn.className = 'hbwl-dir';
-        dirBtn.title = t.dirTitle;
+        dirBtn.title = t.dirTip;
         dirBtn.textContent = settings.dir === 'desc' ? '↓' : '↑';
         dirBtn.addEventListener('click', () => {
             settings.dir = settings.dir === 'desc' ? 'asc' : 'desc';
@@ -316,6 +432,7 @@
         });
 
         const platLabel = document.createElement('label');
+        platLabel.title = t.platformTip;
         platLabel.appendChild(document.createTextNode(t.platformLabel));
         platformSelEl = document.createElement('select');
         // Se puebla en apply() vía refreshPlatformOptions; se siembra con lo mínimo.
@@ -329,6 +446,7 @@
         platLabel.appendChild(platformSelEl);
 
         const discLabel = document.createElement('label');
+        discLabel.title = t.onlyDiscountTip;
         const discChk = document.createElement('input');
         discChk.type = 'checkbox';
         discChk.checked = !!settings.onlyDiscount;
@@ -337,6 +455,7 @@
         discLabel.appendChild(document.createTextNode(t.onlyDiscount));
 
         const remLabel = document.createElement('label');
+        remLabel.title = t.rememberTip;
         const remChk = document.createElement('input');
         remChk.type = 'checkbox';
         remChk.checked = settings.remember !== false;
@@ -347,6 +466,7 @@
         const shareBtn = document.createElement('button');
         shareBtn.type = 'button';
         shareBtn.className = 'hbwl-share';
+        shareBtn.title = t.copyTip;
         shareBtn.textContent = t.copy;
         shareBtn.addEventListener('click', async () => {
             const url = buildShareUrl();
@@ -359,12 +479,21 @@
             } catch (e) { window.prompt(t.copyPrompt, url); }
         });
 
+        // Botón "Saber más"
+        const aboutBtn = document.createElement('button');
+        aboutBtn.type = 'button';
+        aboutBtn.className = 'hbwl-about';
+        aboutBtn.title = t.aboutTip;
+        aboutBtn.textContent = t.about;
+        aboutBtn.addEventListener('click', showAboutModal);
+
         bar.appendChild(sortLabel);
         bar.appendChild(dirBtn);
         bar.appendChild(platLabel);
         bar.appendChild(discLabel);
         bar.appendChild(remLabel);
         bar.appendChild(shareBtn);
+        bar.appendChild(aboutBtn);
         return bar;
     }
 
