@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.4
-// @description  En la Humble Store: (1) en la lista de deseos (/store/wishlist) agrega ordenar y filtrar (agregado, nombre, precio, descuento; "solo con descuento" y por plataforma) con recuerdo, URL compartible, tooltips y botón "Saber más"; (2) en las páginas de producto de juegos de PC agrega botones a GG.deals y PCGamingWiki.
+// @version      1.0.5
+// @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title.
 // @author       g31w0fw0rld
 // @license      MIT
 // @match        https://www.humblebundle.com/store/*
@@ -27,7 +27,7 @@
     // Parsea precios tipo "29,99 $" / "1.299,00 $" a Number (o null).
     function parsePrice(txt) {
         if (!txt) return null;
-        const m = txt.replace(/\s/g, '').match(/[\d.,]+/);
+        const m = txt.replace(/\s/g, '').match(/[\d.]+/);
         if (!m) return null;
         let s = m[0];
         const lastDot = s.lastIndexOf('.'), lastComma = s.lastIndexOf(',');
@@ -56,7 +56,7 @@
         es: {
             sortLabel: 'Ordenar:', added: 'Agregado', name: 'Nombre', price: 'Precio', discount: 'Descuento',
             platformLabel: 'Plataforma:', all: 'Todas', uplay: 'Ubisoft', origin: 'EA', key: 'Clave', drmfree: 'Sin DRM',
-            dirTitle: 'Ascendente / Descendente', onlyDiscount: 'Solo con descuento', remember: 'Recordar',
+onlyDiscount: 'Solo con descuento', remember: 'Recordar',
             copy: '🔗 Copiar enlace', copied: '✔ Copiado', copyPrompt: 'Copia este enlace:',
             about: 'ℹ️ Saber más', close: 'Cerrar',
             sortTip: 'Ordena tu lista de deseos por fecha de agregado, nombre, precio o porcentaje de descuento.',
@@ -70,19 +70,21 @@
             aboutBody: [
                 'Este script mejora la Humble Store en dos frentes:',
                 '• En tu lista de deseos añade una barra de herramientas:',
-                '– Ordenar: por fecha de agregado, nombre, precio o descuento (ascendente/descendente).',
-                '– Plataforma: filtra por Steam, Epic, GOG, Ubisoft, EA, clave o sin DRM.',
-                '– Solo con descuento: muestra únicamente los juegos en oferta.',
-                '– Recordar: guarda tu orden y filtros y los reaplica al volver.',
-                '– Copiar enlace: genera una URL que reproduce tu orden y filtros.',
-                '• En las páginas de producto de juegos de PC añade botones a GG.deals (precios/ofertas) y PCGamingWiki (compatibilidad y arreglos).',
-                'Todo se procesa en tu navegador (se guarda en localStorage); no se envían datos a ningún servidor.',
-            ],
+                '– Ordenar: por fecha de agregado, nombre, precio o descuento, con un botón ↑/↓ para ascendente o descendente. "Agregado" restaura el orden original de Humble, leído del índice que el propio sitio pone en cada fila.',
+                '– Plataforma: filtra por Steam, Epic, GOG, Ubisoft, EA, clave o sin DRM. El desplegable se arma con lo que realmente hay en tu lista, así que nunca ofrece una opción que devolvería cero.',
+                '– Solo con descuento: muestra únicamente los juegos en oferta. Cuenta como rebajado si Humble lo marca en oferta o si el precio original es mayor que el actual; si falta el badge de porcentaje, el descuento se calcula con los dos precios.',
+                '– Recordar: guarda tu orden y filtros y los reaplica al volver. Si lo apagas, no se guarda nada.',
+                '– Copiar enlace: genera una URL que reproduce tu orden, dirección, plataforma y "solo con descuento". Los parámetros son legibles, así que el enlace se puede guardar en marcadores. Si el navegador bloquea el portapapeles, la muestra en un diálogo para copiarla a mano.',
+                '• En las páginas de producto añade botones a GG.deals (precios/ofertas) y PCGamingWiki (compatibilidad y arreglos).',
+                '– Solo en juegos de PC: si la parrilla de precios no trae icono de PC, no se añaden.',
+                '– Ambos buscan por el título, que se limpia antes de los adornos comerciales de Humble ("Comprar …", "… en la tienda Humble", símbolos de marca).',
+                'Todo se procesa en tu navegador (se guarda en localStorage); no se envían datos a ningún servidor.'
+            ]
         },
         en: {
             sortLabel: 'Sort:', added: 'Added', name: 'Name', price: 'Price', discount: 'Discount',
             platformLabel: 'Platform:', all: 'All', uplay: 'Ubisoft', origin: 'EA', key: 'Key', drmfree: 'DRM-free',
-            dirTitle: 'Ascending / Descending', onlyDiscount: 'Only discounted', remember: 'Remember',
+onlyDiscount: 'Only discounted', remember: 'Remember',
             copy: '🔗 Copy link', copied: '✔ Copied', copyPrompt: 'Copy this link:',
             about: 'ℹ️ Learn more', close: 'Close',
             sortTip: 'Sorts your wishlist by date added, name, price or discount percentage.',
@@ -96,18 +98,20 @@
             aboutBody: [
                 'This script improves the Humble Store in two ways:',
                 '• On your wishlist it adds a toolbar:',
-                '– Sort: by date added, name, price or discount (ascending/descending).',
-                '– Platform: filter by Steam, Epic, GOG, Ubisoft, EA, key or DRM-free.',
-                '– Only discounted: shows only games on sale.',
-                '– Remember: saves your sort and filters and reapplies them on return.',
-                '– Copy link: builds a URL that reproduces your sort and filters.',
-                '• On PC game product pages it adds buttons to GG.deals (prices/deals) and PCGamingWiki (compatibility and fixes).',
-                'Everything runs in your browser (stored in localStorage); no data is sent to any server.',
-            ],
-        },
+                '– Sort: by date added, name, price or discount, with an ↑/↓ button for ascending or descending. "Added" restores Humble\'s own original order, read from the index the site puts on each row.',
+                '– Platform: filter by Steam, Epic, GOG, Ubisoft, EA, key or DRM-free. The dropdown is built from what is actually in your list, so it never offers an option that would return nothing.',
+                '– Only discounted: shows only games on sale. A game counts as discounted if Humble marks it on sale or if the original price is higher than the current one; when the percentage badge is missing, the discount is worked out from the two prices.',
+                '– Remember: saves your sort and filters and reapplies them on return. Turn it off and nothing is stored.',
+                '– Copy link: builds a URL that reproduces your sort, direction, platform and "only discounted". The parameters are readable, so the link is bookmarkable. If the browser blocks clipboard access, it shows the URL in a dialog so you can copy it by hand.',
+                '• On product pages it adds buttons to GG.deals (prices/deals) and PCGamingWiki (compatibility and fixes).',
+                '– PC games only: if the price grid carries no PC icon, the buttons are not added.',
+                '– Both search by title, cleaned first of Humble\'s commercial wrapping ("Buy …", "… on Humble Store", trademark symbols).',
+                'Everything runs in your browser (stored in localStorage); no data is sent to any server.'
+            ]
+        }
     };
     const t = I18N[LANG];
-    const SCRIPT_VERSION = '1.0.4'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.0.5'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -150,7 +154,7 @@
                     dir: parsed.dir === 'desc' ? 'desc' : 'asc',
                     onlyDiscount: !!parsed.onlyDiscount,
                     platform: typeof parsed.platform === 'string' ? parsed.platform : 'all',
-                    remember: parsed.remember !== false,
+                    remember: parsed.remember !== false
                 });
             }
         } catch (e) { console.error('(hbwl): loadSettings error:', e); }
@@ -170,7 +174,7 @@
             sort: SORTS.includes(p.get('wlsort')) ? p.get('wlsort') : 'added',
             dir: p.get('wldir') === 'desc' ? 'desc' : 'asc',
             onlyDiscount: p.get('wldisc') === '1',
-            platform: p.get('wlplat') || 'all',
+            platform: p.get('wlplat') || 'all'
         };
     }
     function buildShareUrl() {
@@ -332,7 +336,7 @@
             position: 'fixed', inset: '0', width: '100%', height: '100%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'rgba(0,0,0,0.6)', zIndex: '2147483647',
-            transition: 'opacity 180ms ease', opacity: '0',
+            transition: 'opacity 180ms ease', opacity: '0'
         });
         const box = document.createElement('div');
         Object.assign(box.style, {
@@ -342,7 +346,7 @@
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)', border: '1px solid #cb272c',
             fontFamily: 'Inter, system-ui, sans-serif', fontSize: '14px', lineHeight: '1.5',
             transform: 'translateY(8px) scale(0.98)', opacity: '0',
-            transition: 'transform 180ms ease, opacity 180ms ease',
+            transition: 'transform 180ms ease, opacity 180ms ease'
         });
         const title = document.createElement('div');
         title.textContent = t.aboutTitle;
