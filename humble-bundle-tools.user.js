@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -76,7 +76,7 @@ onlyDiscount: 'Solo con descuento', remember: 'Recordar',
                 '– Recordar: guarda tu orden y filtros y los reaplica al volver. Si lo apagas, no se guarda nada.',
                 '– Copiar enlace: genera una URL que reproduce tu orden, dirección, plataforma y "solo con descuento". Los parámetros son legibles, así que el enlace se puede guardar en marcadores. Si el navegador bloquea el portapapeles, la muestra en un diálogo para copiarla a mano.',
                 '• En las páginas de producto añade botones a GG.deals (precios/ofertas) y PCGamingWiki (compatibilidad y arreglos).',
-                '– Solo en juegos de PC: si la parrilla de precios no trae icono de PC, no se añaden.',
+                '– Solo en juegos de PC. Se reconocen por el icono de sistema operativo (Windows, Linux, Mac) o, si la parrilla no trae ninguno, por el de una tienda que solo existe en PC (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
                 '– Ambos buscan por el título, que se limpia antes de los adornos comerciales de Humble ("Comprar …", "… en la tienda Humble", símbolos de marca).',
                 'Todo se procesa en tu navegador (se guarda en localStorage); no se envían datos a ningún servidor.'
             ]
@@ -104,14 +104,14 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
                 '– Remember: saves your sort and filters and reapplies them on return. Turn it off and nothing is stored.',
                 '– Copy link: builds a URL that reproduces your sort, direction, platform and "only discounted". The parameters are readable, so the link is bookmarkable. If the browser blocks clipboard access, it shows the URL in a dialog so you can copy it by hand.',
                 '• On product pages it adds buttons to GG.deals (prices/deals) and PCGamingWiki (compatibility and fixes).',
-                '– PC games only: if the price grid carries no PC icon, the buttons are not added.',
+                '– PC games only. They are recognised by the operating-system icon (Windows, Linux, Mac) or, when the grid carries none, by a storefront that only exists on PC (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
                 '– Both search by title, cleaned first of Humble\'s commercial wrapping ("Buy …", "… on Humble Store", trademark symbols).',
                 'Everything runs in your browser (stored in localStorage); no data is sent to any server.'
             ]
         }
     };
     const t = I18N[LANG];
-    const SCRIPT_VERSION = '1.0.5'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.0.6'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -570,18 +570,34 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
     // La página de producto se identifica por este bloque, que NO existe en
     // /store (listado), /store/search ni /store/wishlist.
     const PRODUCT_GRID_SELECTOR = '.platform-pricing-grid';
-    // Iconos de sistema operativo: su presencia marca que es un juego de PC.
-    const PC_OS_SELECTOR = 'i.hb-windows, i.hb-mac, i.hb-apple, i.hb-linux';
+    // Iconos de sistema operativo. Los nombres salen del platform_definition_dict del
+    // bundle de Humble: el de Mac es hb-osx (hb-mac y hb-apple NO existen en su set).
+    const PC_OS_SELECTOR = 'i.hb-windows, i.hb-linux, i.hb-osx';
+    // Iconos de método de entrega de tiendas que solo existen en PC
+    // (delivery_method_definition_dict: steam, gog, epic, uplay, origin, blizzard).
+    // Hacen falta como segunda señal porque la parrilla se queda SIN iconos de SO cuando
+    // el producto no trae `platforms` o cuando las que trae están en la lista que Humble
+    // oculta (android/switch/switch2/3DS/new3ds), y el juego sigue siendo de PC.
+    const PC_STORE_SELECTOR = 'i.hb-steam, i.hb-gog, i.hb-epic, i.hb-uplay, i.hb-origin, i.hb-bnet';
+    // Tercera señal: con entrega por Humble app la plantilla sustituye TODOS los iconos
+    // por hb-bundle (compartido con los juegos web), pero añade este bloque, cuyo propio
+    // texto dice "The app only supports Windows PC".
+    const HUMBLE_APP_SELECTOR = '.humble-app-required, .humble-app-requirement';
     // Puntos de anclaje (en orden de preferencia) para insertar los botones.
     const ANCHOR_SELECTORS = ['.js-wishlist-container', '.shopping-cart-button-container', PRODUCT_GRID_SELECTOR];
 
     const LINKS_ID = 'hbx-external-links';
     const LINKS_STYLES_ID = 'hbx-external-styles';
     const TRADEMARK_REGEX = /[™®©]/g;
-    // Prefijos/sufijos que Humble añade en og:title/document.title según el idioma,
-    // p. ej. "Comprar {juego} en la tienda Humble" / "Buy {juego} on Humble Store".
+    // Prefijo que Humble añade en og:title/document.title según el idioma,
+    // p. ej. "Buy {juego} from the Humble Store" / "Comprar {juego} en la tienda Humble".
     const TITLE_PREFIX_REGEX = /^\s*(?:comprar|compra|buy|acheter|kaufen|acquista|comprar agora)\s+/i;
-    const TITLE_SUFFIX_REGEX = /\s+(?:en la tienda|na loja|on the|on|dans la boutique|im)\s+Humble.*$/i;
+    // Cola de la envoltura comercial. Enumerar la preposición de cada idioma es lo que
+    // dejó pasar el "from the Humble Store" real de og:title, así que en su lugar se
+    // corta un enlace de 1-3 palabras antes de "Humble". Va SIN flag /i a propósito:
+    // exigir minúsculas es lo que separa las palabras de enlace de las del título
+    // (…"Anniversary Edition from the Humble Store" -> …"Anniversary Edition").
+    const TITLE_SUFFIX_REGEX = /\s+[a-z]{1,6}(?:\s+[a-z]{1,7}){0,2}\s+Humble(?:\s+\S{1,14}){0,2}\s*$/;
 
     // Nombre del juego. Fuente primaria: el <h1> visible (ya viene limpio); como
     // respaldo, og:title / document.title, a los que se les quita el prefijo/sufijo
@@ -592,19 +608,24 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
         let title = (h1 || og || document.title || '').trim();
         title = title
             .replace(TITLE_PREFIX_REGEX, '')          // "Comprar …"
-            .replace(TITLE_SUFFIX_REGEX, '')          // "… en la tienda Humble"
+            .replace(TITLE_SUFFIX_REGEX, '')          // "… from the Humble Store"
             .replace(/\s*[-|]\s*Humble\b.*$/i, '')    // "… - Humble Store"
             .replace(TRADEMARK_REGEX, '')
             .replace(/\s+/g, ' ')
             .trim();
-        return title;
+        // Mientras el SPA carga, document.title es "The Humble Store: Loading" (o
+        // ": Error"); si se cuela, la búsqueda se haría con esa cadena.
+        return /^the humble store\b/i.test(title) ? '' : title;
     }
 
-    // Es producto de PC si hay parrilla de precios y dentro un icono de SO.
+    // Es producto de PC si hay parrilla de precios y dentro alguna de las tres señales.
+    // Basta una: ver PC_STORE_SELECTOR y HUMBLE_APP_SELECTOR para el porqué.
     function isPcProductPage() {
         const grid = document.querySelector(PRODUCT_GRID_SELECTOR);
         if (!grid) return false;
-        return !!grid.querySelector(PC_OS_SELECTOR);
+        return !!grid.querySelector(PC_OS_SELECTOR)
+            || !!grid.querySelector(PC_STORE_SELECTOR)
+            || !!grid.querySelector(HUMBLE_APP_SELECTOR);
     }
 
     function injectLinkStyles() {
@@ -663,21 +684,25 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
         return box;
     }
 
+    // Devuelve true solo si los botones quedaron puestos (o ya estaban). El false
+    // importa: es lo que mantiene vivo el polling cuando la parrilla ya existe pero
+    // el título o el ancla todavía no.
     function insertLinks() {
-        if (document.getElementById(LINKS_ID)) return;
+        if (document.getElementById(LINKS_ID)) return true;
         const title = getGameTitle();
-        if (!title) return;
+        if (!title) return false;
 
         let anchor = null;
         for (const sel of ANCHOR_SELECTORS) {
             anchor = document.querySelector(sel);
             if (anchor) break;
         }
-        if (!anchor) return;
+        if (!anchor) return false;
 
         const links = buildLinks(title);
         if (anchor.matches(PRODUCT_GRID_SELECTOR)) anchor.appendChild(links);
         else (anchor.closest('section') || anchor).after(links);
+        return true;
     }
 
     function initProductLinks() {
@@ -686,7 +711,7 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
             tries++;
             let done = false;
             try {
-                if (isPcProductPage()) { insertLinks(); done = true; }
+                if (isPcProductPage()) done = insertLinks();
             } catch (e) { console.error('(hbx-links): Error:', e); done = true; }
             if (done || tries > 40) clearInterval(iv);  // ~10 s máx.
         }, 250);
