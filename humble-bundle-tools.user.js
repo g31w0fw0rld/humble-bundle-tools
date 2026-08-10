@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.6
-// @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title.
+// @version      1.0.7
+// @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in their tooltip.
 // @author       g31w0fw0rld
 // @license      MIT
 // @match        https://www.humblebundle.com/store/*
@@ -56,7 +56,7 @@
         es: {
             sortLabel: 'Ordenar:', added: 'Agregado', name: 'Nombre', price: 'Precio', discount: 'Descuento',
             platformLabel: 'Plataforma:', all: 'Todas', uplay: 'Ubisoft', origin: 'EA', key: 'Clave', drmfree: 'Sin DRM',
-onlyDiscount: 'Solo con descuento', remember: 'Recordar',
+            onlyDiscount: 'Solo con descuento', remember: 'Recordar',
             copy: '🔗 Copiar enlace', copied: '✔ Copiado', copyPrompt: 'Copia este enlace:',
             about: 'ℹ️ Saber más', close: 'Cerrar',
             sortTip: 'Ordena tu lista de deseos por fecha de agregado, nombre, precio o porcentaje de descuento.',
@@ -66,6 +66,8 @@ onlyDiscount: 'Solo con descuento', remember: 'Recordar',
             rememberTip: 'Guarda tu orden y filtros y los reaplica al volver a la lista de deseos.',
             copyTip: 'Copia un enlace que reproduce tu orden y filtros actuales al abrirlo.',
             aboutTip: 'Ver qué hace este script en su totalidad.',
+            ggTip: 'Busca el título en el catálogo de GG.deals, sin filtro de tienda ni de DRM: Humble revende llaves de varias. Al buscar por nombre, puede no dar con el juego exacto.',
+            pcgwTip: 'Busca el título en PCGamingWiki (compatibilidad y arreglos). Al buscar por nombre, puede no dar con el artículo exacto.',
             aboutTitle: '¿Qué hace este script?',
             aboutBody: [
                 'Este script mejora la Humble Store en dos frentes:',
@@ -77,14 +79,14 @@ onlyDiscount: 'Solo con descuento', remember: 'Recordar',
                 '– Copiar enlace: genera una URL que reproduce tu orden, dirección, plataforma y "solo con descuento". Los parámetros son legibles, así que el enlace se puede guardar en marcadores. Si el navegador bloquea el portapapeles, la muestra en un diálogo para copiarla a mano.',
                 '• En las páginas de producto añade botones a GG.deals (precios/ofertas) y PCGamingWiki (compatibilidad y arreglos).',
                 '– Solo en juegos de PC. Se reconocen por el icono de sistema operativo (Windows, Linux, Mac) o, si la parrilla no trae ninguno, por el de una tienda que solo existe en PC (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
-                '– Ambos buscan por el título, que se limpia antes de los adornos comerciales de Humble ("Comprar …", "… en la tienda Humble", símbolos de marca).',
+                '– Ambos buscan por el título, que se limpia antes de los adornos comerciales de Humble ("Comprar …", "… en la tienda Humble", símbolos de marca). Al buscar por nombre pueden no acertar, y cada uno lo dice en su tooltip.',
                 'Todo se procesa en tu navegador (se guarda en localStorage); no se envían datos a ningún servidor.'
             ]
         },
         en: {
             sortLabel: 'Sort:', added: 'Added', name: 'Name', price: 'Price', discount: 'Discount',
             platformLabel: 'Platform:', all: 'All', uplay: 'Ubisoft', origin: 'EA', key: 'Key', drmfree: 'DRM-free',
-onlyDiscount: 'Only discounted', remember: 'Remember',
+            onlyDiscount: 'Only discounted', remember: 'Remember',
             copy: '🔗 Copy link', copied: '✔ Copied', copyPrompt: 'Copy this link:',
             about: 'ℹ️ Learn more', close: 'Close',
             sortTip: 'Sorts your wishlist by date added, name, price or discount percentage.',
@@ -94,6 +96,8 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
             rememberTip: 'Saves your sort and filters and reapplies them when you return to the wishlist.',
             copyTip: 'Copies a link that reproduces your current sort and filters when opened.',
             aboutTip: 'See everything this script does.',
+            ggTip: 'Searches the title in the GG.deals catalogue, with no store or DRM filter: Humble resells keys for several. Being a title search, it may not hit the exact game.',
+            pcgwTip: 'Searches the title on PCGamingWiki (compatibility and fixes). Being a title search, it may not hit the exact article.',
             aboutTitle: 'What does this script do?',
             aboutBody: [
                 'This script improves the Humble Store in two ways:',
@@ -105,13 +109,13 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
                 '– Copy link: builds a URL that reproduces your sort, direction, platform and "only discounted". The parameters are readable, so the link is bookmarkable. If the browser blocks clipboard access, it shows the URL in a dialog so you can copy it by hand.',
                 '• On product pages it adds buttons to GG.deals (prices/deals) and PCGamingWiki (compatibility and fixes).',
                 '– PC games only. They are recognised by the operating-system icon (Windows, Linux, Mac) or, when the grid carries none, by a storefront that only exists on PC (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
-                '– Both search by title, cleaned first of Humble\'s commercial wrapping ("Buy …", "… on Humble Store", trademark symbols).',
+                '– Both search by title, cleaned first of Humble\'s commercial wrapping ("Buy …", "… on Humble Store", trademark symbols). Being title searches they can miss, and each says so in its tooltip.',
                 'Everything runs in your browser (stored in localStorage); no data is sent to any server.'
             ]
         }
     };
     const t = I18N[LANG];
-    const SCRIPT_VERSION = '1.0.6'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.0.7'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -649,13 +653,16 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
         (document.head || document.documentElement).appendChild(style);
     }
 
-    // opts: { iconUrl } (favicon remoto) o { iconSvg } (SVG inline, a prueba de CSP/hotlink)
+    // opts: { iconUrl } (favicon remoto) o { iconSvg } (SVG inline, a prueba de CSP/hotlink),
+    // más { tooltip }: los dos botones buscan por nombre y pueden no acertar, así que la
+    // etiqueta sola no basta — el tooltip es donde vive esa incertidumbre.
     function makeLinkButton(cls, label, href, opts) {
         const a = document.createElement('a');
         a.className = `hbx-btn ${cls}`;
         a.href = href;
         a.target = '_blank';
         a.rel = 'nofollow noopener external';
+        if (opts && opts.tooltip) a.title = opts.tooltip;
         if (opts && opts.iconSvg) {
             const span = document.createElement('span');
             span.className = 'hbx-ico';
@@ -679,8 +686,10 @@ onlyDiscount: 'Only discounted', remember: 'Remember',
         const box = document.createElement('div');
         box.id = LINKS_ID;
         const q = encodeURIComponent(title);
-        box.appendChild(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q, { iconUrl: GGDEALS_ICON_URL }));
-        box.appendChild(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q, { iconSvg: PCGW_ICON_SVG }));
+        box.appendChild(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q,
+            { iconUrl: GGDEALS_ICON_URL, tooltip: t.ggTip }));
+        box.appendChild(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q,
+            { iconSvg: PCGW_ICON_SVG, tooltip: t.pcgwTip }));
         return box;
     }
 
