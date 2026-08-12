@@ -6,9 +6,9 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 
 *Wishlist (`/wishlist`): sort, direction, platform filter, "only discounted", "remember", copy link and "Learn more", all in one row above your games. / Lista de deseos (`/wishlist`): orden, dirección, filtro de plataforma, "solo con descuento", "recordar", copiar enlace y "Saber más", todo en una fila sobre tus juegos.*
 
-![The GG.deals and PCGamingWiki buttons below the purchase column of a Humble product page](docs/screenshot-store.png)
+![The GG.deals and PCGamingWiki buttons in a single row at the end of the purchase column of a Humble product page](docs/screenshot-store.png)
 
-*Product page (`/store/`): both buttons close the purchase column, below "Add to cart" and the wishlist button. / Página de producto (`/store/`): los dos botones cierran la columna de compra, bajo "Add to cart" y el botón de lista de deseos.*
+*Product page (`/store/`): both buttons close the purchase column in a single row, below "Add to cart" and the wishlist button. / Página de producto (`/store/`): los dos botones cierran la columna de compra en una sola fila, bajo "Add to cart" y el botón de lista de deseos.*
 
 ## English
 
@@ -23,7 +23,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 - **"Learn more"** button with the full explanation inside the page, and a tooltip on every control.
 
 **Product pages (`/store/`)**
-- Adds a **GG.deals** button (prices and deals across stores) and a **PCGamingWiki** button (fixes, technical notes, known issues), stacked at the end of the purchase column.
+- Adds a **GG.deals** button (prices and deals across stores) and a **PCGamingWiki** button (fixes, technical notes, known issues), side by side in a single row at the end of the purchase column, each taking half the width.
 - **Only on PC games.** The script checks the price grid for a PC platform icon first, so console-only products are left alone — PCGamingWiki would have nothing to say about them.
 - Both search by the game's title, which is **cleaned first**: the commercial wrapping Humble adds ("Buy …", "… on Humble Store", trademark symbols) is stripped so the search sees the name and nothing else. Being title searches they can still miss, so **each button says so in its tooltip** — the label carries the destination, the tooltip carries the uncertainty.
 - The PCGamingWiki logo travels **inline as SVG**, because its favicon returns 403 to hotlinking; the GG.deals favicon loads as a normal image and, if it were ever blocked, removes itself and leaves the button working with just its label.
@@ -50,7 +50,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 - Botón **"Saber más"** con la explicación completa dentro de la página, y un tooltip en cada control.
 
 **Páginas de producto (`/store/`)**
-- Añade un botón de **GG.deals** (precios y ofertas entre tiendas) y otro de **PCGamingWiki** (arreglos, notas técnicas, problemas conocidos), apilados al final de la columna de compra.
+- Añade un botón de **GG.deals** (precios y ofertas entre tiendas) y otro de **PCGamingWiki** (arreglos, notas técnicas, problemas conocidos), lado a lado en una sola fila al final de la columna de compra, a mitad de ancho cada uno.
 - **Solo en juegos de PC.** El script comprueba antes que la parrilla de precios tenga un icono de plataforma PC, así que los productos solo de consola se quedan sin botones — PCGamingWiki no tendría nada que decir de ellos.
 - Los dos buscan por el título del juego, que se **limpia antes**: el envoltorio comercial que añade Humble ("Comprar …", "… en la tienda Humble", símbolos de marca registrada) se quita para que la búsqueda vea el nombre y nada más. Aun así, al buscar por nombre pueden no acertar, así que **cada botón lo dice en su tooltip** — la etiqueta carga el destino y el tooltip la incertidumbre.
 - El logo de PCGamingWiki viaja **como SVG en línea**, porque su favicon devuelve 403 al enlazarlo desde fuera; el favicon de GG.deals carga como imagen normal y, si alguna vez lo bloquearan, se quita solo y deja el botón funcionando con su etiqueta.

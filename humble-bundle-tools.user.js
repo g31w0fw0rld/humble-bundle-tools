@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in their tooltip.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -115,7 +115,7 @@
         }
     };
     const t = I18N[LANG];
-    const SCRIPT_VERSION = '1.0.7'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.0.8'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -637,16 +637,20 @@
         const style = document.createElement('style');
         style.id = LINKS_STYLES_ID;
         style.textContent = `
-            #${LINKS_ID} { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+            #${LINKS_ID} { display: flex; gap: 8px; margin-top: 12px; }
             #${LINKS_ID} .hbx-btn {
-                display: flex; align-items: center; justify-content: center; gap: 8px;
-                width: 100%; box-sizing: border-box; padding: 12px 14px;
-                border-radius: 4px; font-size: 14px; font-weight: 700; letter-spacing: .3px;
+                display: flex; align-items: center; justify-content: center; gap: 6px;
+                flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 8px 10px;
+                border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: .3px;
                 text-transform: uppercase; text-decoration: none; cursor: pointer;
-                transition: filter .15s ease;
+                white-space: nowrap; overflow: hidden; transition: filter .15s ease;
             }
             #${LINKS_ID} .hbx-btn:hover { filter: brightness(1.12); text-decoration: none; }
-            #${LINKS_ID} .hbx-ico { width: 18px; height: 18px; object-fit: contain; flex: 0 0 auto; }
+            #${LINKS_ID} .hbx-ico { display: inline-flex; align-items: center; flex: 0 0 auto; }
+            #${LINKS_ID} img.hbx-ico { width: 14px; height: 14px; object-fit: contain; }
+            /* El logo de PCGamingWiki es más alto que ancho (viewBox 827x1158): se fija
+               el alto y se deja el ancho automático para no deformarlo. */
+            #${LINKS_ID} .hbx-ico svg { height: 14px; width: auto; display: block; }
             #${LINKS_ID} .hbx-gg   { background: #12a150; color: #fff; }
             #${LINKS_ID} .hbx-pcgw { background: #3d4450; color: #fff; }
         `;
@@ -666,7 +670,6 @@
         if (opts && opts.iconSvg) {
             const span = document.createElement('span');
             span.className = 'hbx-ico';
-            span.style.display = 'inline-flex';
             span.innerHTML = opts.iconSvg;
             a.appendChild(span);
         } else if (opts && opts.iconUrl) {
