@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.0.8
+// @version      1.1.0
 // @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in their tooltip.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -42,14 +42,45 @@
     }
 
     // =============================================
-    // IDIOMA (auto-detect: si la página/navegador está en español -> es, si no -> en)
+    // IDIOMA
     // =============================================
-    // Prioriza el lang del documento (idioma con que Humble sirve la página) y
-    // cae al del navegador. Solo distingue español vs. resto (inglés por defecto).
+    // Los 6 idiomas que sirve Humble, con los mismos códigos que usa el selector
+    // del pie (atributo data-locale). Ojo: allí el chino va como 'zh_CN', con
+    // guion BAJO, que normalizeLang convierte a 'zh-cn' y reduce a 'zh'.
+    const SUPPORTED_LANGS = ['en', 'es', 'de', 'fr', 'it', 'zh'];
+
+    // Reduce un código BCP-47 ('de-DE', 'zh_CN') al idioma soportado más cercano;
+    // '' si no hay ninguno, para que la cascada pase al siguiente paso.
+    function normalizeLang(raw) {
+        const code = (raw || '').toLowerCase().replace(/_/g, '-');
+        if (!code) return '';
+        if (SUPPORTED_LANGS.includes(code)) return code;
+        const base = code.split('-')[0];
+        return SUPPORTED_LANGS.includes(base) ? base : '';
+    }
+
+    // Cascada, de la señal más fiel a la menos. Lo que manda es el paso 1: si el
+    // usuario eligió un idioma en el selector de Humble, el script habla ESE
+    // idioma en vez de adivinar por navegador y contradecir a la página.
+    //   1) la opción marcada .active en el selector del pie: es su elección
+    //      explícita, tal cual la guarda Humble.
+    //   2) <html lang>: el idioma con el que Humble sirvió la página realmente
+    //      (lo negocia por Accept-Language cuando no hay elección guardada).
+    //   3) navigator.languages, si la página no dijo nada.
+    //   4) inglés.
+    // El script corre en document-idle, así que el pie ya está en el DOM; aun así
+    // el paso 2 cubre cualquier cambio de maquetación sin romper nada.
     function detectLang() {
-        const docLang = (document.documentElement.getAttribute('lang') || '').toLowerCase();
-        const navLang = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
-        return (docLang || navLang).startsWith('es') ? 'es' : 'en';
+        const active = document.querySelector('.js-language-container li.active button[data-locale]');
+        const fromPicker = normalizeLang(active && active.getAttribute('data-locale'));
+        if (fromPicker) return fromPicker;
+        const fromDoc = normalizeLang(document.documentElement.getAttribute('lang'));
+        if (fromDoc) return fromDoc;
+        for (const l of [navigator.language, ...(navigator.languages || [])]) {
+            const n = normalizeLang(l);
+            if (n) return n;
+        }
+        return 'en';
     }
     const LANG = detectLang();
     const I18N = {
@@ -112,10 +143,132 @@
                 '– Both search by title, cleaned first of Humble\'s commercial wrapping ("Buy …", "… on Humble Store", trademark symbols). Being title searches they can miss, and each says so in its tooltip.',
                 'Everything runs in your browser (stored in localStorage); no data is sent to any server.'
             ]
+        },
+        de: {
+            sortLabel: 'Sortieren:', added: 'Hinzugefügt', name: 'Name', price: 'Preis', discount: 'Rabatt',
+            platformLabel: 'Plattform:', all: 'Alle', uplay: 'Ubisoft', origin: 'EA', key: 'Key', drmfree: 'DRM-frei',
+            onlyDiscount: 'Nur reduzierte', remember: 'Merken',
+            copy: '🔗 Link kopieren', copied: '✔ Kopiert', copyPrompt: 'Diesen Link kopieren:',
+            about: 'ℹ️ Mehr erfahren', close: 'Schließen',
+            sortTip: 'Sortiert deine Wunschliste nach Hinzufügedatum, Name, Preis oder Rabatt in Prozent.',
+            dirTip: 'Wechselt zwischen aufsteigender (↑) und absteigender (↓) Reihenfolge.',
+            platformTip: 'Zeigt nur Spiele der gewählten Plattform (Steam, Epic, GOG usw.). „Alle“ filtert nicht.',
+            onlyDiscountTip: 'Blendet Spiele aus, die nicht im Angebot sind; zeigt nur reduzierte.',
+            rememberTip: 'Speichert Sortierung und Filter und wendet sie bei der Rückkehr zur Wunschliste wieder an.',
+            copyTip: 'Kopiert einen Link, der beim Öffnen deine aktuelle Sortierung und Filter wiederherstellt.',
+            aboutTip: 'Alles ansehen, was dieses Skript macht.',
+            ggTip: 'Sucht den Titel im Katalog von GG.deals, ohne Shop- oder DRM-Filter: Humble verkauft Keys für mehrere. Da es eine Titelsuche ist, wird nicht immer das exakte Spiel getroffen.',
+            pcgwTip: 'Sucht den Titel auf PCGamingWiki (Kompatibilität und Fixes). Da es eine Titelsuche ist, wird nicht immer der exakte Artikel getroffen.',
+            aboutTitle: 'Was macht dieses Skript?',
+            aboutBody: [
+                'Dieses Skript verbessert den Humble Store an zwei Stellen:',
+                '• Auf deiner Wunschliste kommt eine Werkzeugleiste dazu:',
+                '– Sortieren: nach Hinzufügedatum, Name, Preis oder Rabatt, mit einer ↑/↓-Schaltfläche für auf- oder absteigend. „Hinzugefügt“ stellt Humbles eigene ursprüngliche Reihenfolge wieder her, gelesen aus dem Index, den die Seite selbst in jede Zeile schreibt.',
+                '– Plattform: filtert nach Steam, Epic, GOG, Ubisoft, EA, Key oder DRM-frei. Das Auswahlmenü wird aus dem gebaut, was wirklich in deiner Liste steht, und bietet deshalb nie eine Option an, die nichts zurückgäbe.',
+                '– Nur reduzierte: zeigt ausschließlich Spiele im Angebot. Als reduziert gilt, was Humble als Angebot markiert oder wo der ursprüngliche Preis über dem aktuellen liegt; fehlt das Prozent-Abzeichen, wird der Rabatt aus den beiden Preisen berechnet.',
+                '– Merken: speichert Sortierung und Filter und wendet sie bei der Rückkehr wieder an. Ausgeschaltet wird nichts gespeichert.',
+                '– Link kopieren: baut eine URL, die deine Sortierung, Richtung, Plattform und „Nur reduzierte“ wiederherstellt. Die Parameter sind lesbar, der Link lässt sich also als Lesezeichen speichern. Blockiert der Browser die Zwischenablage, wird die URL in einem Dialog zum Abschreiben angezeigt.',
+                '• Auf Produktseiten kommen Schaltflächen zu GG.deals (Preise/Angebote) und PCGamingWiki (Kompatibilität und Fixes) dazu.',
+                '– Nur bei PC-Spielen. Erkannt werden sie am Betriebssystem-Symbol (Windows, Linux, Mac) oder, wenn keines vorhanden ist, an einem Shop, den es nur auf dem PC gibt (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
+                '– Beide suchen nach dem Titel, zuvor bereinigt um Humbles Verkaufsbeiwerk („Buy …“, „… on Humble Store“, Markenzeichen). Als Titelsuche können sie danebenliegen, und jede sagt das in ihrem Tooltip.',
+                'Alles läuft in deinem Browser (gespeichert im localStorage); es werden keine Daten an einen Server gesendet.'
+            ]
+        },
+        fr: {
+            sortLabel: 'Trier :', added: 'Ajout', name: 'Nom', price: 'Prix', discount: 'Remise',
+            platformLabel: 'Plateforme :', all: 'Toutes', uplay: 'Ubisoft', origin: 'EA', key: 'Clé', drmfree: 'Sans DRM',
+            onlyDiscount: 'Uniquement en promo', remember: 'Mémoriser',
+            copy: '🔗 Copier le lien', copied: '✔ Copié', copyPrompt: 'Copiez ce lien :',
+            about: 'ℹ️ En savoir plus', close: 'Fermer',
+            sortTip: 'Trie votre liste de souhaits par date d’ajout, nom, prix ou pourcentage de remise.',
+            dirTip: 'Bascule entre l’ordre croissant (↑) et décroissant (↓).',
+            platformTip: 'N’affiche que les jeux de la plateforme choisie (Steam, Epic, GOG, etc.). « Toutes » ne filtre pas.',
+            onlyDiscountTip: 'Masque les jeux qui ne sont pas en promotion ; n’affiche que ceux en remise.',
+            rememberTip: 'Enregistre votre tri et vos filtres et les réapplique à votre retour sur la liste de souhaits.',
+            copyTip: 'Copie un lien qui reproduit votre tri et vos filtres actuels à l’ouverture.',
+            aboutTip: 'Voir tout ce que fait ce script.',
+            ggTip: 'Recherche le titre dans le catalogue GG.deals, sans filtre de boutique ni de DRM : Humble revend des clés de plusieurs. S’agissant d’une recherche par titre, le jeu exact peut ne pas être trouvé.',
+            pcgwTip: 'Recherche le titre sur PCGamingWiki (compatibilité et correctifs). S’agissant d’une recherche par titre, l’article exact peut ne pas être trouvé.',
+            aboutTitle: 'Que fait ce script ?',
+            aboutBody: [
+                'Ce script améliore le Humble Store sur deux fronts :',
+                '• Sur votre liste de souhaits, il ajoute une barre d’outils :',
+                '– Trier : par date d’ajout, nom, prix ou remise, avec un bouton ↑/↓ pour l’ordre croissant ou décroissant. « Ajout » restaure l’ordre d’origine de Humble, lu dans l’index que le site lui-même place sur chaque ligne.',
+                '– Plateforme : filtre par Steam, Epic, GOG, Ubisoft, EA, clé ou sans DRM. Le menu est construit à partir de ce que contient réellement votre liste, il ne propose donc jamais une option qui ne renverrait rien.',
+                '– Uniquement en promo : n’affiche que les jeux en solde. Un jeu compte comme remisé si Humble le signale en promotion ou si le prix d’origine dépasse le prix actuel ; en l’absence du badge de pourcentage, la remise est calculée à partir des deux prix.',
+                '– Mémoriser : enregistre votre tri et vos filtres et les réapplique au retour. Désactivé, rien n’est stocké.',
+                '– Copier le lien : construit une URL qui reproduit votre tri, sa direction, la plateforme et « uniquement en promo ». Les paramètres sont lisibles, le lien peut donc être mis en favori. Si le navigateur bloque le presse-papiers, l’URL s’affiche dans une boîte de dialogue pour la copier à la main.',
+                '• Sur les pages produit, il ajoute des boutons vers GG.deals (prix/promotions) et PCGamingWiki (compatibilité et correctifs).',
+                '– Jeux PC uniquement. Ils sont reconnus à l’icône du système d’exploitation (Windows, Linux, Mac) ou, si la grille n’en porte aucune, à une boutique qui n’existe que sur PC (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
+                '– Les deux cherchent par titre, nettoyé au préalable des habillages commerciaux de Humble (« Buy … », « … on Humble Store », symboles de marque). Étant des recherches par titre, elles peuvent se tromper, et chacune le précise dans son infobulle.',
+                'Tout est traité dans votre navigateur (stocké dans localStorage) ; aucune donnée n’est envoyée à un serveur.'
+            ]
+        },
+        it: {
+            sortLabel: 'Ordina:', added: 'Aggiunta', name: 'Nome', price: 'Prezzo', discount: 'Sconto',
+            platformLabel: 'Piattaforma:', all: 'Tutte', uplay: 'Ubisoft', origin: 'EA', key: 'Chiave', drmfree: 'Senza DRM',
+            onlyDiscount: 'Solo scontati', remember: 'Ricorda',
+            copy: '🔗 Copia link', copied: '✔ Copiato', copyPrompt: 'Copia questo link:',
+            about: 'ℹ️ Scopri di più', close: 'Chiudi',
+            sortTip: 'Ordina la tua lista dei desideri per data di aggiunta, nome, prezzo o percentuale di sconto.',
+            dirTip: 'Alterna tra ordine crescente (↑) e decrescente (↓).',
+            platformTip: 'Mostra solo i giochi della piattaforma scelta (Steam, Epic, GOG, ecc.). «Tutte» non filtra.',
+            onlyDiscountTip: 'Nasconde i giochi non in offerta; mostra solo quelli scontati.',
+            rememberTip: 'Salva ordinamento e filtri e li riapplica quando torni alla lista dei desideri.',
+            copyTip: 'Copia un link che all’apertura riproduce l’ordinamento e i filtri attuali.',
+            aboutTip: 'Vedi tutto quello che fa questo script.',
+            ggTip: 'Cerca il titolo nel catalogo di GG.deals, senza filtro di negozio né di DRM: Humble rivende chiavi di diversi. Trattandosi di una ricerca per titolo, potrebbe non trovare il gioco esatto.',
+            pcgwTip: 'Cerca il titolo su PCGamingWiki (compatibilità e correzioni). Trattandosi di una ricerca per titolo, potrebbe non trovare la voce esatta.',
+            aboutTitle: 'Che cosa fa questo script?',
+            aboutBody: [
+                'Questo script migliora l’Humble Store su due fronti:',
+                '• Nella tua lista dei desideri aggiunge una barra degli strumenti:',
+                '– Ordina: per data di aggiunta, nome, prezzo o sconto, con un pulsante ↑/↓ per crescente o decrescente. «Aggiunta» ripristina l’ordine originale di Humble, letto dall’indice che il sito stesso mette su ogni riga.',
+                '– Piattaforma: filtra per Steam, Epic, GOG, Ubisoft, EA, chiave o senza DRM. Il menu si costruisce con quello che c’è davvero nella tua lista, quindi non offre mai un’opzione che restituirebbe zero risultati.',
+                '– Solo scontati: mostra unicamente i giochi in offerta. Un gioco conta come scontato se Humble lo segna in offerta o se il prezzo originale è superiore a quello attuale; se manca il badge della percentuale, lo sconto si calcola dai due prezzi.',
+                '– Ricorda: salva ordinamento e filtri e li riapplica al ritorno. Se lo disattivi, non viene salvato nulla.',
+                '– Copia link: genera un URL che riproduce ordinamento, direzione, piattaforma e «solo scontati». I parametri sono leggibili, quindi il link si può salvare nei preferiti. Se il browser blocca gli appunti, l’URL viene mostrato in una finestra per copiarlo a mano.',
+                '• Nelle pagine di prodotto aggiunge pulsanti verso GG.deals (prezzi/offerte) e PCGamingWiki (compatibilità e correzioni).',
+                '– Solo per i giochi PC. Si riconoscono dall’icona del sistema operativo (Windows, Linux, Mac) o, se la griglia non ne ha nessuna, da un negozio che esiste solo su PC (Steam, GOG, Epic, Ubisoft, EA, Battle.net).',
+                '– Entrambi cercano per titolo, ripulito prima dagli orpelli commerciali di Humble («Buy …», «… on Humble Store», simboli di marchio). Trattandosi di ricerche per titolo possono sbagliare, e ciascuno lo dice nel proprio tooltip.',
+                'Tutto viene elaborato nel tuo browser (salvato in localStorage); non viene inviato alcun dato a nessun server.'
+            ]
+        },
+        zh: {
+            sortLabel: '排序：', added: '加入时间', name: '名称', price: '价格', discount: '折扣',
+            platformLabel: '平台：', all: '全部', uplay: 'Ubisoft', origin: 'EA', key: '激活码', drmfree: '无 DRM',
+            onlyDiscount: '仅显示打折', remember: '记住设置',
+            copy: '🔗 复制链接', copied: '✔ 已复制', copyPrompt: '复制此链接：',
+            about: 'ℹ️ 了解更多', close: '关闭',
+            sortTip: '按加入时间、名称、价格或折扣百分比对愿望单排序。',
+            dirTip: '在升序（↑）与降序（↓）之间切换。',
+            platformTip: '仅显示所选平台的游戏（Steam、Epic、GOG 等）。选择“全部”则不筛选。',
+            onlyDiscountTip: '隐藏未打折的游戏，仅显示有折扣的。',
+            rememberTip: '保存你的排序和筛选条件，回到愿望单时自动重新应用。',
+            copyTip: '复制一个链接，打开后即可还原你当前的排序和筛选条件。',
+            aboutTip: '查看此脚本的全部功能。',
+            ggTip: '在 GG.deals 的目录中搜索该标题，不加商店或 DRM 筛选：Humble 转售多家商店的激活码。由于是按标题搜索，可能无法精确匹配到该游戏。',
+            pcgwTip: '在 PCGamingWiki 上搜索该标题（兼容性与修复）。由于是按标题搜索，可能无法精确匹配到对应条目。',
+            aboutTitle: '这个脚本有什么用？',
+            aboutBody: [
+                '本脚本从两个方面改进 Humble Store：',
+                '• 在愿望单页面添加一个工具栏：',
+                '– 排序：按加入时间、名称、价格或折扣排序，并有 ↑/↓ 按钮切换升序或降序。“加入时间”会还原 Humble 自己的原始顺序，该顺序读取自网站写在每一行上的索引。',
+                '– 平台：按 Steam、Epic、GOG、Ubisoft、EA、激活码或无 DRM 筛选。下拉列表根据你清单中实际存在的内容生成，因此绝不会出现结果为零的选项。',
+                '– 仅显示打折：只显示正在促销的游戏。只要 Humble 标记为促销，或原价高于现价，即视为打折；若缺少折扣百分比标签，则用两个价格算出折扣。',
+                '– 记住设置：保存你的排序和筛选条件，返回时重新应用。关闭后不会保存任何内容。',
+                '– 复制链接：生成一个可还原排序、方向、平台和“仅显示打折”的网址。参数可读，因此该链接可以加入书签。如果浏览器阻止访问剪贴板，会用对话框显示网址供手动复制。',
+                '• 在商品页面添加通往 GG.deals（价格与优惠）和 PCGamingWiki（兼容性与修复）的按钮。',
+                '– 仅限 PC 游戏。通过操作系统图标（Windows、Linux、Mac）识别；若该区域没有任何图标，则通过仅存在于 PC 的商店图标识别（Steam、GOG、Epic、Ubisoft、EA、Battle.net）。',
+                '– 两者都按标题搜索，搜索前会先清除 Humble 的商业修饰（“Buy …”、“… on Humble Store”、商标符号）。按标题搜索有可能不准，各自的提示中都有说明。',
+                '所有处理都在你的浏览器中完成（保存在 localStorage）；不会向任何服务器发送数据。'
+            ]
         }
     };
-    const t = I18N[LANG];
-    const SCRIPT_VERSION = '1.0.8'; // sincronizar con @version
+    // Merge sobre `en`: una clave que falte en un idioma cae al inglés en vez de
+    // quedar en undefined. Así se pueden añadir idiomas incompletos sin romper nada.
+    const t = { ...I18N.en, ...(I18N[LANG] || {}) };
+    const SCRIPT_VERSION = '1.1.0'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
