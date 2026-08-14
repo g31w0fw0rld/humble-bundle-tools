@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.1.0
-// @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in their tooltip.
+// @version      1.1.1
+// @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in a tooltip drawn with Humble's own tooltip styles.
 // @author       g31w0fw0rld
 // @license      MIT
 // @match        https://www.humblebundle.com/store/*
@@ -268,7 +268,7 @@
     // Merge sobre `en`: una clave que falte en un idioma cae al inglés en vez de
     // quedar en undefined. Así se pueden añadir idiomas incompletos sin romper nada.
     const t = { ...I18N.en, ...(I18N[LANG] || {}) };
-    const SCRIPT_VERSION = '1.1.0'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.1.1'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -745,6 +745,17 @@
 
     const LINKS_ID = 'hbx-external-links';
     const LINKS_STYLES_ID = 'hbx-external-styles';
+    // Tooltip propio de Humble: `class="tooltip-top" data-tooltip="…"` y su CSS pinta
+    // la caja en un ::after (content: attr(data-tooltip)) con su flecha en el ::before.
+    // Es CSS puro, sin una línea de JS, y vive en la misma hoja que ya carga la ficha
+    // de producto. Usarlo es lo que hace que el aviso salga con la caja de Humble en
+    // vez de con la del sistema operativo.
+    const HB_TIP_CLASS = 'tooltip-top';
+    const HB_TIP_WRAP_CLASS = 'hbx-tip';
+    // Gris de texto de Humble (el más repetido en su hoja de estilos). Hace falta
+    // porque su regla deja el tooltip en `color: inherit` sobre fondo blanco: heredado
+    // del botón, que es blanco, saldría blanco sobre blanco.
+    const HB_TIP_TEXT_COLOR = '#494f5c';
     const TRADEMARK_REGEX = /[™®©]/g;
     // Prefijo que Humble añade en og:title/document.title según el idioma,
     // p. ej. "Buy {juego} from the Humble Store" / "Comprar {juego} en la tienda Humble".
@@ -806,6 +817,18 @@
             #${LINKS_ID} .hbx-ico svg { height: 14px; width: auto; display: block; }
             #${LINKS_ID} .hbx-gg   { background: #12a150; color: #fff; }
             #${LINKS_ID} .hbx-pcgw { background: #3d4450; color: #fff; }
+
+            /* Envoltorio del tooltip de Humble. Va por fuera del botón y no en él
+               porque el botón lleva overflow:hidden (para recortar la etiqueta si no
+               cupiera) y eso recortaría también la caja del tooltip, que es un
+               pseudo-elemento suyo. Al envolver, el botón se queda como estaba y el
+               que dibuja es el envoltorio. */
+            #${LINKS_ID} .${HB_TIP_WRAP_CLASS} { display: flex; flex: 1 1 0; min-width: 0; }
+            #${LINKS_ID} .${HB_TIP_WRAP_CLASS} .hbx-btn { flex: 1 1 auto; }
+            /* Dos retoques a su caja: el color (ver HB_TIP_TEXT_COLOR) y el ancho,
+               porque su 168px fijo estaba pensado para avisos de tres palabras y estos
+               pasan de cien caracteres. */
+            #${LINKS_ID} .${HB_TIP_WRAP_CLASS}:after { color: ${HB_TIP_TEXT_COLOR}; width: 230px; white-space: normal; }
         `;
         (document.head || document.documentElement).appendChild(style);
     }
@@ -837,15 +860,60 @@
         return a;
     }
 
+    // Resultado de hbTooltipIsLive(), que solo hace falta calcular una vez.
+    let hbTipLive = null;
+
+    /**
+     * Comprueba que el tooltip de Humble siga vivo, midiendo un ejemplar suyo. No
+     * encontré ningún uso vivo de estas clases en la ficha ni en el listado, así que
+     * puede ser CSS heredado: si un día lo quitan de la hoja, esto lo detecta y los
+     * botones se quedan con el `title`, en vez de perder el aviso sin avisar.
+     * @returns {boolean} true si su regla sigue pintando el ::after.
+     */
+    function hbTooltipIsLive() {
+        if (hbTipLive !== null) return hbTipLive;
+
+        const probe = document.createElement('span');
+        probe.className = HB_TIP_CLASS;
+        probe.setAttribute('data-tooltip', 'x');
+        document.body.appendChild(probe);
+        const css = getComputedStyle(probe);
+        // Se mide la regla base del componente (`position: relative; cursor: pointer`)
+        // y NO el ::after que dibuja la caja: getComputedStyle sobre pseudo-elementos
+        // no está implementado en todas partes, y un motor que no lo resuelva daría
+        // por muerto un CSS que sí está. Un <span> sin esa regla es `static`.
+        hbTipLive = css.position === 'relative' && css.cursor === 'pointer';
+        probe.remove();
+        return hbTipLive;
+    }
+
+    /**
+     * Envuelve un botón en el tooltip de Humble. El `title` se retira aquí: con el
+     * tooltip puesto se verían los dos, uno encima del otro.
+     * @param {HTMLAnchorElement} link - El botón ya creado, con su title puesto.
+     * @param {string} text - El mismo texto del title.
+     * @returns {HTMLElement} El envoltorio, o el botón tal cual si su CSS ya no está.
+     */
+    function wrapInHbTooltip(link, text) {
+        if (!hbTooltipIsLive()) return link;
+
+        const box = document.createElement('span');
+        box.className = `${HB_TIP_WRAP_CLASS} ${HB_TIP_CLASS}`;
+        box.setAttribute('data-tooltip', text);
+        box.appendChild(link);
+        link.removeAttribute('title');
+        return box;
+    }
+
     function buildLinks(title) {
         injectLinkStyles();
         const box = document.createElement('div');
         box.id = LINKS_ID;
         const q = encodeURIComponent(title);
-        box.appendChild(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q,
-            { iconUrl: GGDEALS_ICON_URL, tooltip: t.ggTip }));
-        box.appendChild(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q,
-            { iconSvg: PCGW_ICON_SVG, tooltip: t.pcgwTip }));
+        box.appendChild(wrapInHbTooltip(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q,
+            { iconUrl: GGDEALS_ICON_URL, tooltip: t.ggTip }), t.ggTip));
+        box.appendChild(wrapInHbTooltip(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q,
+            { iconSvg: PCGW_ICON_SVG, tooltip: t.pcgwTip }), t.pcgwTip));
         return box;
     }
 
