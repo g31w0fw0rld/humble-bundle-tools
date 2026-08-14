@@ -29,7 +29,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 - The PCGamingWiki logo travels **inline as SVG**, because its favicon returns 403 to hotlinking; the GG.deals favicon loads as a normal image and, if it were ever blocked, removes itself and leaves the button working with just its label.
 - Both open in a new tab, with `rel="nofollow noopener external"`.
 
-**Language:** automatic Spanish / English detection, following the language Humble serves the page in.
+**Language:** the toolbar comes in **6 languages** — Spanish, English, German, French, Italian and Chinese — taken from the language ticked in Humble's own footer selector, so the toolbar does not contradict the page around it; then from `<html lang>`, then from your browser, falling back to English.
 
 **Install:**
 1. Install [Tampermonkey](https://www.tampermonkey.net/).
@@ -56,7 +56,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 - El logo de PCGamingWiki viaja **como SVG en línea**, porque su favicon devuelve 403 al enlazarlo desde fuera; el favicon de GG.deals carga como imagen normal y, si alguna vez lo bloquearan, se quita solo y deja el botón funcionando con su etiqueta.
 - Los dos abren en una pestaña nueva, con `rel="nofollow noopener external"`.
 
-**Idioma:** detección automática español / inglés, siguiendo el idioma con el que Humble sirve la página.
+**Idioma:** la barra viene en **6 idiomas** —español, inglés, alemán, francés, italiano y chino—, tomados del idioma marcado en el propio selector del pie de Humble, para que la barra no contradiga a la página que la rodea; luego del `<html lang>`, luego del navegador, con inglés como respaldo.
 
 **Instalación:**
 1. Instala [Tampermonkey](https://www.tampermonkey.net/).
