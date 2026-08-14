@@ -20,7 +20,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 - **Only discounted:** hides everything that is not on sale. A game counts as discounted if Humble marks it on sale *or* if the original price is higher than the current one, and when the percentage badge is missing the script works the discount out from the two prices — so sorting by discount stays correct either way.
 - **Remember:** saves your sort and filters and reapplies them when you come back. Turn it off and nothing is written: the toolbar stops persisting anything.
 - **Copy link:** builds a URL that reproduces your sort, direction, platform and "only discounted" when opened. The parameters are **plain and readable** (`wlsort`, `wldir`, `wlplat`, `wldisc`), so the link is bookmarkable and you can even edit it by hand. If the browser blocks clipboard access, the URL is shown in a dialog so you can copy it yourself.
-- **"Learn more"** button with the full explanation inside the page, and a tooltip on every control.
+- **"Learn more"** button with the full explanation inside the page, and a tooltip on every control — drawn with **Humble's own tooltip**, the same one the product buttons use, and not the browser's little grey box. If Humble ever drops those styles, the control falls back to the browser tooltip so the explanation is never lost.
 
 **Product pages (`/store/`)**
 - Adds a **GG.deals** button (prices and deals across stores) and a **PCGamingWiki** button (fixes, technical notes, known issues), side by side in a single row at the end of the purchase column, each taking half the width.
@@ -47,7 +47,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 - **Solo con descuento:** oculta todo lo que no está en oferta. Un juego cuenta como rebajado si Humble lo marca en oferta *o* si el precio original es mayor que el actual, y cuando falta el badge de porcentaje el script lo calcula a partir de los dos precios — así ordenar por descuento sigue siendo correcto en cualquier caso.
 - **Recordar:** guarda tu orden y tus filtros y los reaplica al volver. Si lo apagas no se escribe nada: la barra deja de persistir.
 - **Copiar enlace:** genera una URL que al abrirla reproduce tu orden, dirección, plataforma y "solo con descuento". Los parámetros son **legibles** (`wlsort`, `wldir`, `wlplat`, `wldisc`), así que el enlace se puede guardar en marcadores e incluso editar a mano. Si el navegador bloquea el portapapeles, muestra la URL en un diálogo para copiarla tú.
-- Botón **"Saber más"** con la explicación completa dentro de la página, y un tooltip en cada control.
+- Botón **"Saber más"** con la explicación completa dentro de la página, y un tooltip en cada control —dibujado con **el tooltip de Humble**, el mismo que usan los botones de las fichas, y no con la cajita gris del navegador—. Si Humble quitara esos estilos, el control cae al tooltip del navegador y la explicación no se pierde.
 
 **Páginas de producto (`/store/`)**
 - Añade un botón de **GG.deals** (precios y ofertas entre tiendas) y otro de **PCGamingWiki** (arreglos, notas técnicas, problemas conocidos), lado a lado en una sola fila al final de la columna de compra, a mitad de ancho cada uno.

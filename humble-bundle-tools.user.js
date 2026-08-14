@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in a tooltip drawn with Humble's own tooltip styles.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -268,7 +268,7 @@
     // Merge sobre `en`: una clave que falte en un idioma cae al inglés en vez de
     // quedar en undefined. Así se pueden añadir idiomas incompletos sin romper nada.
     const t = { ...I18N.en, ...(I18N[LANG] || {}) };
-    const SCRIPT_VERSION = '1.1.1'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.1.2'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -461,6 +461,16 @@
             }
             #${TOOLBAR_ID} .hbwl-dir { min-width: 2.2em; text-align: center; font-weight: 600; }
             #${TOOLBAR_ID} .hbwl-share { background: #cb272c; color: #fff; border: none; }
+
+            /* Envoltorio del tooltip de Humble (ver wrapInHbTooltip). Aquí va
+               inline-flex y no flex como en los botones de ficha: en la barra el
+               control manda su ancho, no lo reparte. Es el envoltorio, y no el
+               control, quien pasa a ser el flex-item del gap de la barra. */
+            #${TOOLBAR_ID} .${HB_TIP_WRAP_CLASS} { display: inline-flex; align-items: center; }
+            /* Los mismos dos retoques a su caja que en la ficha: el color, que su
+               regla deja heredado (ver HB_TIP_TEXT_COLOR), y el ancho, porque su
+               168px fijo se queda corto para avisos de más de cien caracteres. */
+            #${TOOLBAR_ID} .${HB_TIP_WRAP_CLASS}:after { color: ${HB_TIP_TEXT_COLOR}; width: 230px; white-space: normal; }
         `;
         (document.head || document.documentElement).appendChild(style);
     }
@@ -648,13 +658,19 @@
         aboutBtn.textContent = t.about;
         aboutBtn.addEventListener('click', showAboutModal);
 
-        bar.appendChild(sortLabel);
-        bar.appendChild(dirBtn);
-        bar.appendChild(platLabel);
-        bar.appendChild(discLabel);
-        bar.appendChild(remLabel);
-        bar.appendChild(shareBtn);
-        bar.appendChild(aboutBtn);
+        // Los siete controles se cuelgan del tooltip de Humble, el mismo que los dos
+        // botones de ficha: aquí el aviso explica comportamiento invisible (qué guarda
+        // "Recordar", qué mete el enlace copiado), que es justo lo que justifica un
+        // tooltip. wrapInHbTooltip() retira el `title` al envolver, y devuelve el
+        // control tal cual si el CSS de Humble ya no está: entonces el `title` se
+        // queda y el aviso no se pierde.
+        bar.appendChild(wrapInHbTooltip(sortLabel, t.sortTip));
+        bar.appendChild(wrapInHbTooltip(dirBtn, t.dirTip));
+        bar.appendChild(wrapInHbTooltip(platLabel, t.platformTip));
+        bar.appendChild(wrapInHbTooltip(discLabel, t.onlyDiscountTip));
+        bar.appendChild(wrapInHbTooltip(remLabel, t.rememberTip));
+        bar.appendChild(wrapInHbTooltip(shareBtn, t.copyTip));
+        bar.appendChild(wrapInHbTooltip(aboutBtn, t.aboutTip));
         return bar;
     }
 
@@ -888,11 +904,13 @@
     }
 
     /**
-     * Envuelve un botón en el tooltip de Humble. El `title` se retira aquí: con el
-     * tooltip puesto se verían los dos, uno encima del otro.
-     * @param {HTMLAnchorElement} link - El botón ya creado, con su title puesto.
+     * Envuelve un control en el tooltip de Humble. El `title` se retira aquí: con el
+     * tooltip puesto se verían los dos, uno encima del otro. Lo usan los dos botones
+     * de ficha y los siete controles de la barra de la lista de deseos, cada uno con
+     * su propio retoque de CSS al envoltorio (ver los dos bloques de estilos).
+     * @param {HTMLElement} link - El control ya creado, con su title puesto.
      * @param {string} text - El mismo texto del title.
-     * @returns {HTMLElement} El envoltorio, o el botón tal cual si su CSS ya no está.
+     * @returns {HTMLElement} El envoltorio, o el control tal cual si su CSS ya no está.
      */
     function wrapInHbTooltip(link, text) {
         if (!hbTooltipIsLive()) return link;
