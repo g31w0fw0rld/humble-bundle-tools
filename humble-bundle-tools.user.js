@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.1.3
+// @version      1.2.0
 // @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in a tooltip drawn with Humble's own tooltip styles.
 // @author       g31w0fw0rld
 // @license      MIT
@@ -98,7 +98,7 @@
             copyTip: 'Copia un enlace que reproduce tu orden y filtros actuales al abrirlo.',
             aboutTip: 'Ver qué hace este script en su totalidad.',
             ggTip: 'Busca el título en el catálogo de GG.deals, sin filtro de tienda ni de DRM: Humble revende llaves de varias. Al buscar por nombre, puede no dar con el juego exacto.',
-            pcgwTip: 'Busca el título en PCGamingWiki (compatibilidad y arreglos). Al buscar por nombre, puede no dar con el artículo exacto.',
+            pcgwTip: 'Busca en PCGamingWiki (compatibilidad y arreglos) el juego en sí: sin el sufijo de edición y, en DLC y paquetes, por su juego base. Al buscar por nombre, puede no dar con el artículo exacto.',
             aboutTitle: '¿Qué hace este script?',
             aboutName: 'Nombre:',
             aboutVersion: 'Versión:',
@@ -131,7 +131,7 @@
             copyTip: 'Copies a link that reproduces your current sort and filters when opened.',
             aboutTip: 'See everything this script does.',
             ggTip: 'Searches the title in the GG.deals catalogue, with no store or DRM filter: Humble resells keys for several. Being a title search, it may not hit the exact game.',
-            pcgwTip: 'Searches the title on PCGamingWiki (compatibility and fixes). Being a title search, it may not hit the exact article.',
+            pcgwTip: 'Searches PCGamingWiki (compatibility and fixes) for the game itself: without the edition suffix, and for DLC and packs, by their base game. Being a name search, it may not hit the exact article.',
             aboutTitle: 'What does this script do?',
             aboutName: 'Name:',
             aboutVersion: 'Version:',
@@ -164,7 +164,7 @@
             copyTip: 'Kopiert einen Link, der beim Öffnen deine aktuelle Sortierung und Filter wiederherstellt.',
             aboutTip: 'Alles ansehen, was dieses Skript macht.',
             ggTip: 'Sucht den Titel im Katalog von GG.deals, ohne Shop- oder DRM-Filter: Humble verkauft Keys für mehrere. Da es eine Titelsuche ist, wird nicht immer das exakte Spiel getroffen.',
-            pcgwTip: 'Sucht den Titel auf PCGamingWiki (Kompatibilität und Fixes). Da es eine Titelsuche ist, wird nicht immer der exakte Artikel getroffen.',
+            pcgwTip: 'Sucht auf PCGamingWiki (Kompatibilität und Fixes) nach dem Spiel selbst: ohne Editions-Zusatz und bei DLC und Paketen nach dem Hauptspiel. Da nach dem Namen gesucht wird, trifft es nicht immer den genauen Artikel.',
             aboutTitle: 'Was macht dieses Skript?',
             aboutName: 'Name:',
             aboutVersion: 'Version:',
@@ -197,7 +197,7 @@
             copyTip: 'Copie un lien qui reproduit votre tri et vos filtres actuels à l’ouverture.',
             aboutTip: 'Voir tout ce que fait ce script.',
             ggTip: 'Recherche le titre dans le catalogue GG.deals, sans filtre de boutique ni de DRM : Humble revend des clés de plusieurs. S’agissant d’une recherche par titre, le jeu exact peut ne pas être trouvé.',
-            pcgwTip: 'Recherche le titre sur PCGamingWiki (compatibilité et correctifs). S’agissant d’une recherche par titre, l’article exact peut ne pas être trouvé.',
+            pcgwTip: 'Recherche sur PCGamingWiki (compatibilité et correctifs) le jeu lui-même : sans le suffixe d\'édition et, pour les DLC et les packs, par leur jeu de base. S\'agissant d\'une recherche par nom, elle peut ne pas tomber sur l\'article exact.',
             aboutTitle: 'Que fait ce script ?',
             aboutName: 'Nom :',
             aboutVersion: 'Version :',
@@ -230,7 +230,7 @@
             copyTip: 'Copia un link che all’apertura riproduce l’ordinamento e i filtri attuali.',
             aboutTip: 'Vedi tutto quello che fa questo script.',
             ggTip: 'Cerca il titolo nel catalogo di GG.deals, senza filtro di negozio né di DRM: Humble rivende chiavi di diversi. Trattandosi di una ricerca per titolo, potrebbe non trovare il gioco esatto.',
-            pcgwTip: 'Cerca il titolo su PCGamingWiki (compatibilità e correzioni). Trattandosi di una ricerca per titolo, potrebbe non trovare la voce esatta.',
+            pcgwTip: 'Cerca su PCGamingWiki (compatibilità e correzioni) il gioco vero e proprio: senza il suffisso di edizione e, per DLC e pacchetti, tramite il gioco base. Trattandosi di una ricerca per nome, potrebbe non trovare l\'articolo esatto.',
             aboutTitle: 'Che cosa fa questo script?',
             aboutName: 'Nome:',
             aboutVersion: 'Versione:',
@@ -263,7 +263,7 @@
             copyTip: '复制一个链接，打开后即可还原你当前的排序和筛选条件。',
             aboutTip: '查看此脚本的全部功能。',
             ggTip: '在 GG.deals 的目录中搜索该标题，不加商店或 DRM 筛选：Humble 转售多家商店的激活码。由于是按标题搜索，可能无法精确匹配到该游戏。',
-            pcgwTip: '在 PCGamingWiki 上搜索该标题（兼容性与修复）。由于是按标题搜索，可能无法精确匹配到对应条目。',
+            pcgwTip: '在 PCGamingWiki（兼容性与修复）上搜索游戏本体：去掉版本后缀，DLC 和捆绑包则按其本体游戏搜索。由于是按名称搜索，可能无法精确对应到该条目。',
             aboutTitle: '这个脚本有什么用？',
             aboutName: '名称：',
             aboutVersion: '版本：',
@@ -286,7 +286,7 @@
     // Merge sobre `en`: una clave que falte en un idioma cae al inglés en vez de
     // quedar en undefined. Así se pueden añadir idiomas incompletos sin romper nada.
     const t = { ...I18N.en, ...(I18N[LANG] || {}) };
-    const SCRIPT_VERSION = '1.1.3'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.2.0'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
@@ -900,6 +900,40 @@
     // =========================================================================
     const GGDEALS_SEARCH_URL = 'https://gg.deals/games/?title=';
     const PCGW_SEARCH_URL = 'https://pcgamingwiki.com/w/index.php?search=';
+    // Juego base de un DLC. PCGamingWiki no tiene artículo por DLC —los documenta
+    // dentro del juego al que pertenecen—, así que buscar el nombre del DLC no
+    // acierta nunca.
+    //
+    // Humble no publica ese dato en ninguna estructura: sus fichas de tienda no
+    // llevan el bloque JSON que sí tienen las de bundle (los <script> de la página
+    // son btloader, main-js, zdconsent y add-to-cart-helper, ninguno con datos de
+    // producto). Lo único que hay es la frase que se le muestra al usuario:
+    //   "This add-on content requires the base game River City Girls 2 in order to
+    //    play. Click here to purchase the base game."
+    // El enlace de esa frase es el "Click here", no el nombre, así que hay que
+    // sacarlo del texto. Exigir el inglés es seguro porque el @match cubre SOLO
+    // www.humblebundle.com: los idiomas viven en subdominios (es., zh., ru.…) que
+    // este script no toca. Se admite "game" y "product" porque Humble usa las dos.
+    const BASE_GAME_SENTENCE = /requires the base (?:game|product)\s+(.+?)\s+in order to play/i;
+    // Ámbito de la búsqueda: el contenido de la ficha si está, y si no el documento
+    // entero. No se puede acotar más: el aviso lo pinta el CLIENTE —descargando la
+    // ficha de river-city-girls-2-double-dragon-dlc la frase no aparece por ningún
+    // lado, el nombre del juego base solo sale dentro de la descripción— así que no
+    // hay forma de comprobar desde fuera del navegador de qué contenedor cuelga.
+    // Buscar en todo el documento es asumible porque la frase es literal y propia de
+    // Humble; lo que NO es asumible es no encontrarla y dejar el enlace mal.
+    const PAGE_CONTENT_SELECTOR = '.js-page-content, .main-content';
+    // Que lo pinte el cliente trae además un problema de sincronía: el aviso puede
+    // llegar DESPUÉS de la parrilla de precios, que es lo que dispara la fila de
+    // botones. Esperarlo antes de insertar sería arriesgarse a no insertar nunca, así
+    // que la fila sale ya y el href se reescribe si el aviso aparece luego —el mismo
+    // patrón con el que Steam, GOG y Epic corrigen el nombre en inglés—.
+    const BASE_GAME_WATCH_INTERVAL_MS = 250;
+    const BASE_GAME_WATCH_MAX = 40;   // ~10 s, igual que el sondeo de la fila
+    // Sufijos de empaquetado que PCGamingWiki no usa: documenta el juego base y no
+    // tiene páginas por edición. "Definitive", "Anniversary", "Remastered" y "Game
+    // of the Year" NO se tocan: ahí sí suelen ser lanzamientos con página propia.
+    const SKU_EDITION_REGEX = /[\s:–—-]+(?:digital\s+)?(?:standard|deluxe|premium|ultimate|gold|platinum|complete|collector'?s|founder'?s)\s+edition\s*$/i;
     // Icono de GG.deals: favicon remoto (su CDN permite hotlink y carga bien en Humble).
     const GGDEALS_ICON_URL = 'https://gg.deals/favicon.ico';
     // Icono de PCGamingWiki: SVG inline. Su favicon.ico responde 403 al hotlink
@@ -1090,15 +1124,69 @@
         return box;
     }
 
+
+    /**
+     * Recorta lo que PCGamingWiki no indexa: los sufijos de edición. Si el recorte
+     * dejara la cadena vacía —un producto llamado solo "Deluxe Edition"— se queda
+     * el título entero, que es peor buscar que nada.
+     * @param {string} title - Título del producto.
+     * @returns {string} Título sin el sufijo de edición.
+     */
+    function pcgwSearchTitle(title) {
+        return title.replace(SKU_EDITION_REGEX, '').trim() || title;
+    }
+
+    /**
+     * En una ficha de DLC, el nombre del juego al que pertenece, leído de la frase
+     * que Humble muestra. Devuelve '' si la ficha no la lleva, que es lo que deja
+     * la búsqueda con el nombre del propio producto.
+     * @returns {string} Nombre del juego base, o cadena vacía.
+     */
+    function getBaseGameTitle() {
+        const scope = document.querySelector(PAGE_CONTENT_SELECTOR);
+        const found = scope && BASE_GAME_SENTENCE.exec(scope.textContent || '');
+        const match = found || BASE_GAME_SENTENCE.exec(document.body?.textContent || '');
+        return match ? match[1].replace(TRADEMARK_REGEX, '').replace(/\s+/g, ' ').trim() : '';
+    }
+
+    /**
+     * Espera a que aparezca el aviso de DLC y, cuando llegue, corrige el enlace de
+     * PCGamingWiki. Se rinde a los ~10 s o si la fila deja de estar en el documento
+     * (navegación dentro de la SPA). Silencioso: sin aviso, el enlace se queda
+     * buscando el nombre del propio producto.
+     * @param {HTMLAnchorElement} pcgwLink - El enlace a corregir.
+     * @param {string} ownTitle - Nombre del producto, para no reescribir en balde.
+     */
+    function watchBaseGame(pcgwLink, ownTitle) {
+        let tries = 0;
+        const iv = setInterval(() => {
+            tries++;
+            if (!pcgwLink.isConnected || tries > BASE_GAME_WATCH_MAX) { clearInterval(iv); return; }
+            const base = getBaseGameTitle();
+            if (!base) return;
+            clearInterval(iv);
+            if (base !== ownTitle) {
+                pcgwLink.href = PCGW_SEARCH_URL + encodeURIComponent(pcgwSearchTitle(base));
+            }
+        }, BASE_GAME_WATCH_INTERVAL_MS);
+    }
+
+    // GG.deals sí tiene ficha por edición, así que va el título completo.
+    // PCGamingWiki documenta el juego base, así que va sin el sufijo de SKU.
     function buildLinks(title) {
         injectLinkStyles();
         const box = document.createElement('div');
         box.id = LINKS_ID;
         const q = encodeURIComponent(title);
+        // En un DLC manda el juego base; si la ficha no lo dice, su propio nombre.
+        const base = getBaseGameTitle();
+        const qBase = encodeURIComponent(pcgwSearchTitle(base || title));
         box.appendChild(wrapInHbTooltip(makeLinkButton('hbx-gg', 'GG.deals', GGDEALS_SEARCH_URL + q,
             { iconUrl: GGDEALS_ICON_URL, tooltip: t.ggTip }), t.ggTip));
-        box.appendChild(wrapInHbTooltip(makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + q,
-            { iconSvg: PCGW_ICON_SVG, tooltip: t.pcgwTip }), t.pcgwTip));
+        const pcgwLink = makeLinkButton('hbx-pcgw', 'PCGamingWiki', PCGW_SEARCH_URL + qBase,
+            { iconSvg: PCGW_ICON_SVG, tooltip: t.pcgwTip });
+        box.appendChild(wrapInHbTooltip(pcgwLink, t.pcgwTip));
+        if (!base) watchBaseGame(pcgwLink, title);
         return box;
     }
 
