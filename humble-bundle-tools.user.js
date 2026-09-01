@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         Humble Bundle Tools
 // @namespace    https://www.humblebundle.com/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Humble Store, two things. On your wishlist: sort by added, name, price or discount with an ascending/descending toggle, filter by platform (built from what your list actually contains) or by 'only discounted', with remembered settings, a readable shareable URL and a 'Learn more' panel. On PC product pages: buttons to GG.deals and PCGamingWiki, searching by the cleaned game title and saying so in a tooltip drawn with Humble's own tooltip styles.
+// @icon         data:image/png;base64,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
 // @author       g31w0fw0rld
 // @license      MIT
 // @match        https://www.humblebundle.com/store/*
@@ -286,7 +287,7 @@
     // Merge sobre `en`: una clave que falte en un idioma cae al inglés en vez de
     // quedar en undefined. Así se pueden añadir idiomas incompletos sin romper nada.
     const t = { ...I18N.en, ...(I18N[LANG] || {}) };
-    const SCRIPT_VERSION = '1.2.0'; // sincronizar con @version
+    const SCRIPT_VERSION = '1.2.1'; // sincronizar con @version
 
     // =========================================================================
     // MÓDULO 1 — WISHLIST: ordenar y filtrar
