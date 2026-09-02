@@ -6,9 +6,17 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 
 *Wishlist (`/wishlist`): sort, direction, platform filter, "only discounted", "remember", copy link and "Learn more", all in one row above your games. / Lista de deseos (`/wishlist`): orden, dirección, filtro de plataforma, "solo con descuento", "recordar", copiar enlace y "Saber más", todo en una fila sobre tus juegos.*
 
+<img src="docs/screenshot-wishlist-mobile.png" width="375" alt="The same wishlist toolbar at phone width, wrapped into rows">
+
+*The same toolbar on a phone: sort and platform share the first row, the two checkboxes the second, and copy link with "Learn more" the third. / La misma barra en un móvil: orden y plataforma comparten el primer renglón, las dos casillas el segundo, y copiar enlace con "Saber más" el tercero.*
+
 ![The GG.deals and PCGamingWiki buttons in a single row at the end of the purchase column of a Humble product page](docs/screenshot-store.png)
 
 *Product page (`/store/`): both buttons close the purchase column in a single row, below "Add to cart" and the wishlist button. / Página de producto (`/store/`): los dos botones cierran la columna de compra en una sola fila, bajo "Add to cart" y el botón de lista de deseos.*
+
+<img src="docs/screenshot-store-mobile.png" width="375" alt="The two buttons closing the purchase column at phone width">
+
+*The same page on a phone: the pair still closes the column, under "Add to cart" and the wishlist button, sharing one row at full width. / La misma ficha en un móvil: el par sigue cerrando la columna, bajo "Add to cart" y el botón de lista de deseos, compartiendo un renglón a todo el ancho.*
 
 ## English
 
