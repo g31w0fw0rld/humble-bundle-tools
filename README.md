@@ -1,6 +1,6 @@
 # Humble Bundle Tools
 
-Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and PCGamingWiki buttons. / Userscript de Tampermonkey para la Humble Store: herramientas de lista de deseos y botones a GG.deals y PCGamingWiki.
+Userscript for the Humble Store: wishlist tools plus GG.deals and PCGamingWiki buttons. / Userscript para la Humble Store: herramientas de lista de deseos y botones a GG.deals y PCGamingWiki.
 
 ![The toolbar the script adds above the Humble wishlist](docs/screenshot-wishlist.png)
 
@@ -40,7 +40,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 **Language:** the toolbar comes in **6 languages** — Spanish, English, German, French, Italian and Chinese — taken from the language ticked in Humble's own footer selector, so the toolbar does not contradict the page around it; then from `<html lang>`, then from your browser, falling back to English.
 
 **Install:**
-1. Install [Tampermonkey](https://www.tampermonkey.net/).
+1. Install a userscript manager: [Violentmonkey](https://violentmonkey.github.io/) (open source, Chrome/Edge/Firefox) or [Tampermonkey](https://www.tampermonkey.net/). On Chrome and Edge, also turn on **Allow user scripts** on the extension's own page in `chrome://extensions` — without it nothing runs.
 2. Open the installer: [humble-bundle-tools.user.js](https://github.com/g31w0fw0rld/humble-bundle-tools/raw/main/humble-bundle-tools.user.js) (also on [GreasyFork](https://greasyfork.org/es-419/users/1590477-g31w) and [OpenUserJS](https://openuserjs.org/users/g31w0fw0rldgmail.com/scripts)).
 
 **Site:** `humblebundle.com`
@@ -67,7 +67,7 @@ Tampermonkey userscript for the Humble Store: wishlist tools plus GG.deals and P
 **Idioma:** la barra viene en **6 idiomas** —español, inglés, alemán, francés, italiano y chino—, tomados del idioma marcado en el propio selector del pie de Humble, para que la barra no contradiga a la página que la rodea; luego del `<html lang>`, luego del navegador, con inglés como respaldo.
 
 **Instalación:**
-1. Instala [Tampermonkey](https://www.tampermonkey.net/).
+1. Instala un gestor de userscripts: [Violentmonkey](https://violentmonkey.github.io/) (código abierto, Chrome/Edge/Firefox) o [Tampermonkey](https://www.tampermonkey.net/). En Chrome y Edge, activa además **Allow user scripts** en la página de la propia extensión en `chrome://extensions`; sin eso no se ejecuta nada.
 2. Abre el instalador: [humble-bundle-tools.user.js](https://github.com/g31w0fw0rld/humble-bundle-tools/raw/main/humble-bundle-tools.user.js) (también en [GreasyFork](https://greasyfork.org/es-419/users/1590477-g31w) y [OpenUserJS](https://openuserjs.org/users/g31w0fw0rldgmail.com/scripts)).
 
 **Sitio:** `humblebundle.com`
